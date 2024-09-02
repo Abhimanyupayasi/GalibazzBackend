@@ -51,7 +51,7 @@ app.post('/verify-token', async (req, res) => {
       });
     });
 
-    console.log(decoded);
+   // console.log(decoded);
 
     if (decoded && decoded.email) {
       const existingUser = await User.findOne({ email: decoded.email });
@@ -63,9 +63,9 @@ app.post('/verify-token', async (req, res) => {
         });
 
         await user.save();
-        console.log('User saved successfully');
+        //console.log('User saved successfully');
       } else {
-        console.log('User already exists');
+        //console.log('User already exists');
       }
       
       return res.status(200).json({ message: 'Token is valid', decoded });
@@ -73,14 +73,14 @@ app.post('/verify-token', async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
   } catch (err) {
-    console.error('Token verification error:', err);
+    //console.error('Token verification error:', err);
     return res.status(401).json({ message: 'Token is invalid', error: err });
   }
 });
 
 const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization;
-  console.log(token);
+ // console.log(token);
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
@@ -100,7 +100,7 @@ const authMiddleware = async (req, res, next) => {
       });
     });
 
-    console.log(decoded);
+    //console.log(decoded);
 
     if (decoded && decoded.email) {
       req.user = decoded;
@@ -109,7 +109,7 @@ const authMiddleware = async (req, res, next) => {
       return res.status(400).json({ message: 'Email is required' });
     }
   } catch (err) {
-    console.error('Token verification error:', err);
+    //console.error('Token verification error:', err);
     return res.status(401).json({ message: 'Unauthorized', error: err });
   }
 

@@ -1,6 +1,7 @@
 import { configDotenv } from 'dotenv';
 import { connectDB } from './conf/db.js';
 configDotenv();
+
 // connectDB();
 // import express from 'express';
 // import mongoose  from 'mongoose';
@@ -8,8 +9,8 @@ configDotenv();
 // import connectDB from './conf/db.js';
 // import app from './app.js';
 // import { auth } from 'express-oauth2-jwt-bearer';
- console.log("jwtksuri file main ", process.env.AUTH0_JWKS_URI);
- console.log("jwtksuri file main", process.env.AUTH0_AUDIENCE);
+//  console.log("jwtksuri file main ", process.env.AUTH0_JWKS_URI);
+//  console.log("jwtksuri file main", process.env.AUTH0_AUDIENCE);
   
 
 connectDB();
@@ -27,10 +28,11 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import { auth } from 'express-oauth2-jwt-bearer';
 
+console.log( process.env.PORT);
 
 
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 
 app.listen(port, () => {
