@@ -9,6 +9,8 @@ const app = express();
 import axios from 'axios';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import { fetchPostById, newestPosts } from './controllers/post.controller.js';
+import Post from './models/post.model.js';
 dotenv.config();
 
 app.use(cookieParser());
@@ -115,7 +117,24 @@ const authMiddleware = async (req, res, next) => {
 
 }
 
+app.get('/api/p/:id', async (req, res) => {
+  const { id } = req.params;
 
+  try {
+      const post = await Post.findById(id);
+
+      if (!post) {
+          return res.status(404).json({ message: 'Post not found' });
+      }
+
+      res.status(200).json(post);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.get('/api/newpost', newestPosts);
 
 app.use('/api/post', authMiddleware,  postRouter);
 
