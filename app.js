@@ -149,8 +149,30 @@ app.get('/delete/:id',authMiddleware, async (req, res) => {
   }
 });
 
+app.get('/postEmail/:email',authMiddleware, async (req, res) => {
+  const { email } = req.params;
+
+  try {
+      const post = await Post.find({
+          userEmail: email
+      });
+
+      if (!post) {
+          return res.status(404).json({ message: 'Post not found' });
+      }
+
+      res.status(200).json(post);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
+);
+    
+
 
 app.get('/api/newpost', newestPosts);
+
+
 
 app.use('/api/post', authMiddleware,  postRouter);
 
