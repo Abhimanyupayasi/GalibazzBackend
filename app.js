@@ -11,10 +11,17 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { fetchPostById, newestPosts } from './controllers/post.controller.js';
 import Post from './models/post.model.js';
+import { Server } from 'socket.io'; // Add Socket.IO
+import http from 'http'; // Add http to create a server
 dotenv.config();
 
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(
+  {
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+  }
+));
 
 app.use(express.json());
 
@@ -175,5 +182,11 @@ app.get('/api/newpost', newestPosts);
 
 
 app.use('/api/post', authMiddleware,  postRouter);
+
+
+
+
+
+
 
 export default app;
