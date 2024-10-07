@@ -13,6 +13,7 @@ import { fetchPostById, newestPosts } from './controllers/post.controller.js';
 import Post from './models/post.model.js';
 import { Server } from 'socket.io'; // Add Socket.IO
 import http from 'http'; // Add http to create a server
+import { count } from 'console';
 dotenv.config();
 
 app.use(cookieParser());
@@ -182,6 +183,139 @@ app.get('/api/newpost', newestPosts);
 
 
 app.use('/api/post', authMiddleware,  postRouter);
+
+app.post('/posts/:postId/comments', async (req, res) => {
+  const { postId } = req.params;
+  const { text, userEmail, userName } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Validate that all required fields are provided
+    if (!text || !userEmail || !userName) {
+      return res.status(400).json({ message: 'All fields (text, userEmail, userName) are required' });
+    }
+
+    // Add the comment to the post's comments array
+    post.comments.push({ text, userEmail, userName, postId: postId }); // Add postId to comment if needed
+    await post.save();
+
+    res.status(201).json(post);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+app.get('/posts/:postId/comments', async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Fetch comments sorted by createdAt in descending order (newest first)
+    const sortedComments = post.comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Alternatively, you can sort directly in MongoDB using aggregate
+    // const sortedComments = await Post.aggregate([
+    //   { $match: { _id: postId } },
+    //   { $unwind: '$comments' },
+    //   { $sort: { 'comments.createdAt': -1 } }
+    // ]);
+
+    res.status(200).json(sortedComments);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+
+app.get('/api/post/:id/:commentId', async (req, res) => {
+  const { id, commentId } = req.params;
+
+  try {
+      const post = await Post.findById(id);
+
+      if (!post) {
+          return res.status(404).json({ message: 'Post not found' });
+      }
+
+      const comment = post.comments.find((comment) => comment._id == commentId);
+
+      if (!comment) {
+          return res.status(404).json({ message: 'Comment not found' });
+      }
+
+      delete comment.postId;
+
+      res.status(200).json(comment);
+
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/post/:id/:commentId', async (req, res) => {
+  const { id, commentId } = req.params;
+
+  try {
+      const post = await Post.findById(id);
+
+      if (!post) {
+          return res.status(404).json({ message: 'Post not found' });
+      }
+
+      const comment = post.comments.find((comment) => comment._id == commentId);
+
+      if (!comment) {
+          return res.status(404).json({ message: 'Comment not found' });
+      }
+
+      post.comments = post.comments.filter((comment) => comment._id != commentId);
+
+
+
+      await post.save();
+
+      res.status(200).json({ message: 'Comment deleted successfully' });
+
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.get('/api/count/posts/:postId/comments', async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Get total number of comments
+    const totalComments = post.comments.length;
+
+    res.status(200).json({
+      // comments: post.comments, 
+      count:
+      totalComments
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+
 
 
 
